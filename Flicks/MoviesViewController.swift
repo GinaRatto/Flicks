@@ -18,6 +18,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
     @IBOutlet weak var tableView: UITableView!
     
     var movies: [NSDictionary]?
+    var endpoint: String!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -29,11 +30,10 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         tableView.dataSource = self
         tableView.delegate = self
         
- 
-        
         let apiKey = "a07e22bc18f5cb106bfe4cc1f83ad8ed"
-        let url = URL(string: "https://api.themoviedb.org/3/movie/now_playing?api_key=\(apiKey)")!
-        let request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 10)
+        let url = URL(string:
+            "https://api.themoviedb.org/3/movie/" + endpoint + "?api_key=\(apiKey)")
+        let request = URLRequest(url: url!, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 10)
         let session = URLSession(configuration: .default, delegate: nil, delegateQueue: OperationQueue.main)
         MBProgressHUD.showAdded(to: self.view, animated: true)
         let task: URLSessionDataTask = session.dataTask(with: request) { (data: Data?, response: URLResponse?, error: Error?) in
@@ -72,13 +72,16 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         let movie = movies?[indexPath.row]
         let title = movie?["title"] as! String
         let overview = movie?["overview"] as! String
-        let posterPath = movie?["poster_path"] as! String
-        let baseUrl = "http://image.tmdb.org/t/p/w342"
-        let imageURL = NSURL(string: baseUrl + posterPath)
-        
         cell.titleLabel?.text = title
         cell.overviewLabel?.text = overview
-        cell.posterView.setImageWith(imageURL as! URL)
+        
+        let baseUrl = "http://image.tmdb.org/t/p/w342"
+        let posterPath = movie?["poster_path"] as! String
+        if posterPath != nil {
+            let imageURL = NSURL(string: baseUrl + posterPath)
+            cell.posterView.setImageWith(imageURL as! URL)
+        }
+
         
         return cell
     }
@@ -116,14 +119,23 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
     }
     
 
-    /*
+    
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // Get the new view controller using segue.destinationViewController.
         // Pass the selected object to the new view controller.
+        let cell = sender as! UITableViewCell
+        let indexPath = tableView.indexPath(for: cell)
+        let movie = movies?[(indexPath?.row)!]
+        let detailViewController = segue.destination as! DetailViewController
+        detailViewController.movie = movie
+        
+        let backgroundView = UIView()
+        backgroundView.backgroundColor = UIColor.red
+        cell.selectedBackgroundView = backgroundView
     }
-    */
+    
 
 }
